@@ -1,0 +1,14 @@
+{
+    "stg": {
+        "appName": "App Installer STG",
+        "bundleId": "com.app.installer.stg"
+    },
+    "rc": {
+        "appName": "App Installer RC",
+        "bundleId": "com.app.installer.rc"
+    },
+    "prod": {
+        "appName": "App Installer",
+        "bundleId": "com.app.installer"
+    }
+}

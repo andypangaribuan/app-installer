@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - App Installer</title>
+    <link rel="stylesheet" href="/style.css?v=7">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(13, 15, 20, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-accent: rgba(59, 130, 246, 0.5);
+            --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        html,
+        body {
+            background-color: #0f172a !important;
+            min-height: 100vh;
+        }
+
+        body {
+            display: block !important;
+            align-items: unset !important;
+            justify-content: unset !important;
+            padding: 16px 20px !important;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a 60%) !important;
+            font-family: var(--font-main);
+            margin: 0;
+        }
+
+        .admin-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 6px 16px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--card-shadow);
+        }
+
+        .nav-left-group {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header-divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-nav-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .top-admin-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .icon-tab {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .icon-tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .icon-tab.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+        }
+
+        .admin-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            padding: 20px 24px;
+            box-shadow: var(--card-shadow);
+            display: none;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .admin-card.active {
+            display: block;
+        }
+
+        .admin-card h2 {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin: 0;
+            text-transform: capitalize;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .disk-usage-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-right: 8px;
+            height: 32px;
+        }
+
+        .disk-bar-bg {
+            width: 60px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .disk-bar-fill {
+            height: 100%;
+            background: #3b82f6;
+            border-radius: 3px;
+            transition: width 0.5s ease-out;
+        }
+
+        .disk-bar-fill.warning {
+            background: #f59e0b;
+        }
+
+        .disk-bar-fill.danger {
+            background: #ef4444;
+        }
+
+        .disk-text {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .card-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .action-btn {
+            height: 34px;
+            padding: 0 12px;
+            border-radius: 10px;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.primary {
+            background: #3b82f6;
+            border: none;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .action-btn.primary:hover {
+            background: #2563eb;
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        /* Version List */
+        .version-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .version-item {
+            display: grid;
+            grid-template-columns: 180px 1fr 140px 90px;
+            gap: 12px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 8px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .analytics-row-group {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .analytics-row-group:hover {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .list-header {
+            display: grid;
+            grid-template-columns: 180px 1fr 140px 90px;
+            gap: 12px;
+            padding: 0 20px 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 8px;
+        }
+
+        .header-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .text-view-main {
+            font-size: 13px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .text-view-sub {
+            font-size: 11px;
+            color: #64748b;
+            font-family: var(--font-mono);
+        }
+
+        .asset-name-text {
+            font-size: 11px;
+            color: #64748b;
+            font-family: var(--font-mono);
+            margin-top: 2px;
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .asset-name-text.empty {
+            color: #475569;
+            font-style: italic;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .field-label {
+            display: none;
+            /* Hidden in rows, moved to list-header */
+        }
+
+        .input-minimal {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            color: white;
+            padding: 0 10px;
+            font-size: 12px;
+            width: 100%;
+            height: 30px;
+            transition: all 0.2s;
+        }
+
+        .input-minimal:focus {
+            background: rgba(0, 0, 0, 0.2);
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        .asset-name-display {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: var(--text-muted);
+            padding: 0 12px;
+            font-size: 11px;
+            width: 100%;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .asset-name-display.active {
+            color: var(--primary-color);
+            border-style: solid;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .input-readonly {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-muted);
+            padding: 0 12px;
+            font-size: 13px;
+            width: 100%;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            cursor: not-allowed;
+            user-select: none;
+        }
+
+        .env-badge-select {
+            appearance: none;
+            padding: 3px 8px;
+            /* Reduced padding */
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border: none;
+            cursor: pointer;
+            text-align: center;
+            height: 26px;
+            /* Reduced height */
+            transition: all 0.2s;
+        }
+
+        .env-badge-select.prod {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+        }
+
+        .env-badge-select.rc {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.1);
+        }
+
+        .env-badge-select.stg {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
+        }
+
+        .upload-inline {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-upload-min {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            height: 30px;
+            width: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-upload-min:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            transform: scale(1.1);
+        }
+
+        .whitelist-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .user-card {
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            transition: all 0.3s var(--animation-ease);
+        }
+
+        .user-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .user-main-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 1fr 120px 80px;
+            gap: 16px;
+            padding: 8px 20px;
+            align-items: center;
+        }
+
+        .user-details-drawer {
+            display: none;
+            padding: 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.01);
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .search-container-min {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 0 12px;
+            gap: 10px;
+            transition: all 0.3s;
+            height: 36px;
+        }
+
+        .search-container-min:focus-within {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container-min input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            width: 180px;
+            height: 100%;
+        }
+
+        .search-container-min input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .select-minimal {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: white;
+            border-radius: 10px;
+            padding: 0 10px;
+            font-size: 13px;
+            outline: none;
+            height: 36px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .select-minimal:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .select-minimal option {
+            background: #111827;
+            color: white;
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .btn-pagination {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: white;
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .btn-pagination:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-pagination:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+
+        .btn-pagination:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+
+        .page-indicator {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-details-drawer.show {
+            display: grid;
+        }
+
+        .btn-toggle-user {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle-user:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: scale(1.05);
+        }
+
+        .btn-toggle-user.active {
+            background: #3b82f6;
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        .user-col {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .user-info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .user-info-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .order-controls {
+            display: flex;
+            flex-direction: row;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .btn-order {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-order:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-order:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .check-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .check-label:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .check-label.icon-only {
+            width: 32px;
+            height: 30px;
+            padding: 0;
+            justify-content: center;
+            gap: 0;
+        }
+
+        .whitelist-header {
+            display: none;
+        }
+
+        .check-label input {
+            display: none;
+        }
+
+        .check-label:has(input:checked) {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.35);
+            color: #60a5fa;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            padding: 16px 24px;
+            border-radius: 16px;
+            background: rgba(16, 185, 129, 0.9);
+            backdrop-filter: blur(16px);
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2000;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* Confirmation Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 440px;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 12px;
+        }
+
+        .modal-message {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .modal-btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f1f5f9;
+        }
+
+        .modal-btn-confirm {
+            background: #ef4444;
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .modal-btn-confirm:hover {
+            background: #dc2626;
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .changelog-section {
+            grid-column: 1 / -1;
+            padding: 16px;
+            margin-top: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .changelog-section.show {
+            display: block;
+        }
+
+        .toggle-changelog-btn.active {
+            color: #60a5fa;
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <div style="max-width: 1400px; margin: 0 auto;">
+        <header class="admin-nav">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img src="/public/app.png" alt="Logo" style="width:28px; height:28px; border-radius:6px;">
+                <span style="font-weight:600; white-space: nowrap; font-size: 14px;">Admin Portal</span>
+            </div>
+
+            <div class="top-admin-actions">
+                <nav class="icon-nav-group">
+                    <button onclick="switchTab('deployments')" class="icon-tab active" id="tab-deployments"
+                        title="Deployments">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                            </path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button onclick="switchTab('whitelist')" class="icon-tab" id="tab-whitelist" title="Whitelist">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </button>
+                    <button onclick="switchTab('analytics')" class="icon-tab" id="tab-analytics" title="Analytics">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                        </svg>
+                    </button>
+                    <button onclick="switchTab('audit')" class="icon-tab" id="tab-audit" title="Audit Logs"
+                        style="display: none;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                    </button>
+                </nav>
+
+                <div id="disk-usage-container" class="disk-usage-pill" title="Server Disk Usage" style="display:none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        style="color:var(--text-muted);">
+                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                        <path d="M21 5c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                        <path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"></path>
+                    </svg>
+                    <div class="disk-bar-bg">
+                        <div id="disk-bar-fill" class="disk-bar-fill" style="width: 0%"></div>
+                    </div>
+                    <span id="disk-text" class="disk-text">0%</span>
+                </div>
+
+                <div class="header-divider"
+                    style="height: 24px; width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
+                <a href="/" class="icon-tab" title="View Site">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                </a>
+                <button onclick="logout()" class="icon-tab" title="Sign Out"
+                    style="color:#f87171; background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.1);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                        <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main id="section-deployments" class="admin-card active">
+            <div class="card-header-flex">
+                <div class="header-title-group">
+                    <h2>Deployments</h2>
+                    <p style="font-size:14px; color:var(--text-muted); margin-top:4px;">Manage application versions,
+                        releases, and platform builds.</p>
+                </div>
+                <div class="header-actions">
+                    <div class="env-tabs">
+                        <button class="tab-btn active" data-os="android">Android</button>
+                        <button class="tab-btn" data-os="ios">iOS</button>
+                    </div>
+                    <button onclick="addVersionRow()" class="action-btn" title="Add New Version">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                    <button onclick="saveVersions()" class="action-btn primary" title="Save Changes">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="list-header" style="grid-template-columns: 140px 1fr 140px 120px;">
+                <div class="header-label">Env & Version</div>
+                <div class="header-label">Application Info & Asset</div>
+                <div class="header-label">Release Date</div>
+                <div class="header-label" style="text-align: center;">Actions</div>
+            </div>
+
+            <div id="versions-list" class="version-list-container">
+                <!-- Dynamic Items -->
+            </div>
+
+            <div id="versions-pagination" class="pagination-container"
+                style="display: none; justify-content: flex-end; gap: 24px; padding: 16px 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button onclick="changeVersionsPage(-1)" id="btn-versions-prev" class="btn-pagination"
+                        title="Previous">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <div id="versions-page-indicator" class="page-indicator">1/1</div>
+                    <button onclick="changeVersionsPage(1)" id="btn-versions-next" class="btn-pagination" title="Next">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <select id="versions-page-size" class="select-minimal" style="width: auto;"
+                        onchange="updateVersionsPageSize(this.value)">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </main>
+
+        <main id="section-whitelist" class="admin-card">
+            <div class="card-header-flex">
+                <div class="header-title-group">
+                    <h2>Access Whitelist</h2>
+                    <p style="font-size:14px; color:var(--text-muted); margin-top:4px;">Manage user access and specific
+                        viewing permissions.</p>
+                </div>
+                <div class="header-actions">
+                    <div class="search-container-min">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" style="opacity: 0.4;">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" placeholder="Search people..." id="whitelist-search"
+                            oninput="renderWhitelist()">
+                    </div>
+                    <button onclick="addWhitelistUser()" class="action-btn" title="Add User">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="whitelist-header">
+                <div class="header-label">User Name</div>
+                <div class="header-label">Email Address</div>
+                <div class="header-label">User Type</div>
+                <div class="header-label">OS</div>
+                <div class="header-label">Env</div>
+                <div class="header-label">Platform</div>
+                <div class="header-label">Send To</div>
+                <div class="header-label">Notes</div>
+                <div class="header-label" style="text-align: center;">Action</div>
+            </div>
+
+            <div id="whitelist-list" class="whitelist-container">
+                <!-- Dynamic Items -->
+            </div>
+
+            <div id="whitelist-pagination" class="pagination-container"
+                style="display: none; justify-content: flex-end; gap: 24px; padding: 16px 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button onclick="changeWhitelistPage(-1)" id="btn-whitelist-prev" class="btn-pagination"
+                        title="Previous">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <div id="whitelist-page-indicator" class="page-indicator">1/1</div>
+                    <button onclick="changeWhitelistPage(1)" id="btn-whitelist-next" class="btn-pagination"
+                        title="Next">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <select id="whitelist-page-size" class="select-minimal" style="width: auto;"
+                        onchange="updateWhitelistPageSize(this.value)">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </main>
+
+        <main id="section-analytics" class="admin-card">
+            <div class="card-header-flex">
+                <div class="header-title-group">
+                    <h2>Download Analytics</h2>
+                    <p style="font-size:14px; color:var(--text-muted); margin-top:4px;">Track build downloads and usage
+                        over time.</p>
+                </div>
+                <div class="header-actions">
+                    <button onclick="loadAnalytics()" class="action-btn" title="Refresh">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M23 4v6h-6"></path>
+                            <path d="M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="analytics-content">
+                <div style="text-align:center; padding: 60px; color: var(--text-muted);">Loading analytics...</div>
+            </div>
+
+            <div id="analytics-pagination" class="pagination-container"
+                style="display: none; justify-content: flex-end; gap: 24px; padding: 16px 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button onclick="changeAnalyticsPage(-1)" id="btn-analytics-prev" class="btn-pagination"
+                        title="Previous">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <div id="analytics-page-indicator" class="page-indicator">1/1</div>
+                    <button onclick="changeAnalyticsPage(1)" id="btn-analytics-next" class="btn-pagination"
+                        title="Next">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <select id="analytics-page-size" class="select-minimal" style="width: auto;"
+                        onchange="updateAnalyticsPageSize(this.value)">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </main>
+
+        <main id="section-audit" class="admin-card">
+            <div class="card-header-flex">
+                <div class="header-title-group">
+                    <h2>Audit Logs</h2>
+                    <p style="font-size:14px; color:var(--text-muted); margin-top:4px;">History of administrative
+                        actions and security events.</p>
+                </div>
+                <div class="header-actions">
+                    <div class="search-container-min">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" style="opacity: 0.4;">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" placeholder="Search events..." id="audit-search" oninput="filterAuditLogs()">
+                    </div>
+                    <select id="audit-action-filter" class="select-minimal" onchange="filterAuditLogs()">
+                        <option value="">All Actions</option>
+                    </select>
+                    <button onclick="loadAuditLogs()" class="action-btn" title="Refresh">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path d="M23 4v6h-6"></path>
+                            <path d="M1 20v-6h6"></path>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="audit-list-header" class="list-header"
+                style="grid-template-columns: 90px 165px 135px 1fr; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0 20px 12px;">
+                <div class="header-label">Time</div>
+                <div class="header-label">Administrator</div>
+                <div class="header-label">Action</div>
+                <div class="header-label">Details</div>
+            </div>
+
+            <div id="audit-logs-content"
+                style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; max-height: 600px; overflow-y: auto;">
+                <div style="text-align:center; padding: 60px; color: var(--text-muted);">Loading logs...</div>
+            </div>
+
+            <div id="audit-pagination" class="pagination-container"
+                style="display: none; justify-content: flex-end; gap: 24px; padding: 16px 20px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button onclick="changeAuditPage(-1)" id="btn-audit-prev" class="btn-pagination" title="Previous">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <div id="audit-page-indicator" class="page-indicator">1/1</div>
+                    <button onclick="changeAuditPage(1)" id="btn-audit-next" class="btn-pagination" title="Next">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <select id="audit-page-size" class="select-minimal" style="width: auto;"
+                        onchange="updateAuditPageSize(this.value)">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="toast" class="toast">Changes saved successfully!</div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">Confirm Deletion</div>
+            <div class="modal-message" id="modalMessage">Are you sure you want to proceed?</div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" onclick="closeConfirmModal(false)">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" onclick="closeConfirmModal(true)">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentOs = 'android';
+        let allData = { android: [], ios: [] };
+        let whitelistData = [];
+        let appConfig = {};
+        let isDeleting = false;
+        let confirmCallback = null;
+
+        function getLocalDate() {
+            const tz = appConfig.timezone || 'UTC';
+            try {
+                const now = new Date();
+                const formatter = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: tz,
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                return formatter.format(now); // en-CA gives YYYY-MM-DD
+            } catch (e) {
+                return new Date().toISOString().split('T')[0];
+            }
+        }
+
+        async function init() {
+            try {
+                const cRes = await fetch('/config');
+                appConfig = await cRes.json();
+
+                // Handle Super Admin visibility
+                if (!appConfig.isSuperAdmin) {
+                    const whitelistBtn = document.getElementById('tab-whitelist');
+                    if (whitelistBtn) whitelistBtn.style.display = 'none';
+                    const auditBtn = document.getElementById('tab-audit');
+                    if (auditBtn) auditBtn.style.display = 'none';
+                } else {
+                    const auditBtn = document.getElementById('tab-audit');
+                    if (auditBtn) auditBtn.style.display = 'flex';
+                }
+
+                const vRes = await fetch('/api/admin/versions');
+                if (vRes.status === 403) return location.href = '/';
+                allData = await vRes.json();
+
+                if (appConfig.isSuperAdmin) {
+                    const wRes = await fetch('/api/admin/whitelist');
+                    if (wRes.ok) {
+                        whitelistData = await wRes.json();
+                        renderWhitelist();
+                    }
+                }
+
+                renderVersions();
+            } catch (err) { }
+        }
+
+        function toggleChangelog(btn, index) {
+            const section = document.getElementById(`changelog-${index}`);
+            section.classList.toggle('show');
+            btn.classList.toggle('active-toggle'); // Just for UI state if needed
+        }
+
+        function toggleAnalyticsDetail(key) {
+            const drawer = document.getElementById(`details-${key}`);
+            const arrow = document.getElementById(`arrow-${key}`);
+            if (drawer.style.display === 'none') {
+                drawer.style.display = 'block';
+                arrow.style.transform = 'rotate(180deg)';
+            } else {
+                drawer.style.display = 'none';
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.icon-tab').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById('tab-' + tabId);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            document.querySelectorAll('.admin-card').forEach(card => card.classList.remove('active'));
+            const target = document.getElementById('section-' + tabId);
+            if (target) target.classList.add('active');
+
+            if (tabId === 'analytics') loadAnalytics();
+            if (tabId === 'audit') loadAuditLogs();
+        }
+
+        let auditLogsData = [];
+        let auditCurrentPage = 1;
+        let auditPageSize = 10;
+        let filteredAuditLogs = [];
+
+        function updateAuditPageSize(size) {
+            auditPageSize = parseInt(size);
+            auditCurrentPage = 1;
+            applyAuditFilter();
+        }
+
+        async function loadAuditLogs() {
+            try {
+                const res = await fetch('/api/admin/audit-logs');
+                if (!res.ok) throw new Error('Unauthorized');
+                auditLogsData = await res.json();
+
+                // Populate Actions Dropdown
+                const actionFilter = document.getElementById('audit-action-filter');
+                const uniqueActions = [...new Set(auditLogsData.map(l => l.action))].sort();
+                const currentValue = actionFilter.value;
+                actionFilter.innerHTML = '<option value="">All Actions</option>' +
+                    uniqueActions.map(a => `<option value="${a}" ${a === currentValue ? 'selected' : ''}>${a}</option>`).join('');
+
+                auditCurrentPage = 1;
+                applyAuditFilter();
+            } catch (err) {
+                document.getElementById('audit-logs-content').innerHTML = `<div style="text-align:center; padding: 40px; color: #ef4444;">Failed to load logs: ${err.message}</div>`;
+            }
+        }
+
+        function filterAuditLogs() {
+            auditCurrentPage = 1;
+            applyAuditFilter();
+        }
+
+        function applyAuditFilter() {
+            const term = document.getElementById('audit-search').value.toLowerCase();
+            const action = document.getElementById('audit-action-filter').value;
+
+            filteredAuditLogs = auditLogsData.filter(log => {
+                const matchesSearch = log.email.toLowerCase().includes(term) ||
+                    log.action.toLowerCase().includes(term) ||
+                    log.details.toLowerCase().includes(term) ||
+                    (log.os || '').toLowerCase().includes(term) ||
+                    (log.version || '').toLowerCase().includes(term);
+
+                const matchesAction = !action || log.action === action;
+
+                return matchesSearch && matchesAction;
+            });
+            renderAuditLogs();
+        }
+
+        function changeAuditPage(dir) {
+            const maxPage = Math.ceil(filteredAuditLogs.length / auditPageSize);
+            const newPage = auditCurrentPage + dir;
+            if (newPage >= 1 && newPage <= maxPage) {
+                auditCurrentPage = newPage;
+                renderAuditLogs();
+                // Scroll to top of content
+                document.getElementById('audit-logs-content').scrollTop = 0;
+            }
+        }
+
+        function renderAuditLogs() {
+            const container = document.getElementById('audit-logs-content');
+            const paginator = document.getElementById('audit-pagination');
+
+            if (filteredAuditLogs.length === 0) {
+                const term = document.getElementById('audit-search').value;
+                container.innerHTML = `<div style="text-align:center; padding: 60px; color: var(--text-muted); background: rgba(0,0,0,0.1); border-radius: 20px;">${term ? 'No logs matching search.' : 'No audit logs yet.'}</div>`;
+                paginator.style.display = 'none';
+                return;
+            }
+
+            const totalPages = Math.ceil(filteredAuditLogs.length / auditPageSize);
+            paginator.style.display = totalPages > 1 ? 'flex' : 'none';
+
+            document.getElementById('audit-page-indicator').textContent = `${auditCurrentPage}/${totalPages}`;
+            document.getElementById('btn-audit-prev').disabled = auditCurrentPage === 1;
+            document.getElementById('btn-audit-next').disabled = auditCurrentPage === totalPages;
+
+            const start = (auditCurrentPage - 1) * auditPageSize;
+            const end = start + auditPageSize;
+            const pageData = filteredAuditLogs.slice(start, end);
+
+            container.innerHTML = pageData.map(log => {
+                const osIcon = log.os === 'android' ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.7;"><path d="M17.523 15.3414C18.173 15.3414 18.7 14.8144 18.7 14.1644C18.7 13.5144 18.173 12.9874 17.523 12.9874C16.873 12.9874 16.346 13.5144 16.346 14.1644C16.346 14.8144 16.873 15.3414 17.523 15.3414ZM6.47702 15.3414C7.12702 15.3414 7.65402 14.8144 7.65402 14.1644C7.65402 13.5144 7.12702 12.9874 6.47702 12.9874C5.82702 12.9874 5.30002 13.5144 5.30002 14.1644C5.30002 14.1644 5.82702 15.3414 6.47702 15.3414ZM17.915 10.3344L19.742 7.16839C19.864 6.95739 19.791 6.68839 19.58 6.56639C19.369 6.44439 19.1 6.51739 18.978 6.72839L17.13 9.92839C15.688 9.27239 14.07 8.91039 12.35 8.91039C10.63 8.91039 9.01202 9.27239 7.57002 9.92839L5.72202 6.72839C5.60002 6.51739 5.33102 6.44439 5.12002 6.56639C4.90902 6.68839 4.83602 6.95739 4.95802 7.16839L6.78502 10.3344C3.80502 11.9364 1.76902 14.9964 1.65002 18.5754H23.051C22.932 14.9964 20.895 11.9364 17.915 10.3344Z"/></svg>' :
+                    log.os === 'ios' ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.7;"><path d="M17.05 20.28c-.96.95-2.04 1.78-3.23 2.14-1.29.39-2.22.4-3.55.01-1.22-.36-2.13-1.04-3.13-2.04-2.58-2.6-3.8-7.39-2.11-10.43 1.05-1.89 3.01-3.04 4.88-3.04.66 0 1.25.13 1.83.39 1.48.66 1.95.83 3.63.15 1.09-.44 2.13-.75 3.32-.4 1.49.44 2.65 1.25 3.48 2.52-3.09 1.62-3.69 6.4-1.01 8.7a8.5 8.5 0 011.01.89c-.61 1.74-2.14 1.2 -3.14 2.1zM11.97 4.74c-.02-2.1 1.73-3.89 3.51-4.7 1.88 1.43 1.88 4.3 0 5.86-1.58 1.3 -3.51.93-3.51-1.16z"/></svg>' : '';
+
+                const envBadge = log.env ? `<span class="env-badge-select ${log.env === 'prod' ? 'prod' : 'stg'}" style="font-size: 8px; padding: 0; width: 34px; height: 16px; display: inline-flex; align-items: center; justify-content: center; margin-left: 3px; pointer-events: none; border-radius: 4px;">${log.env.toUpperCase()}</span>` : '';
+                const versionInfo = log.version ? `<span style="font-size: 11px; opacity: 0.8; margin-left: 4px;">v${log.version}</span>` : '';
+
+                let actionClass = 'rc'; // Default Blue (Updates)
+                if (log.action.includes('Add') || log.action.includes('Upload')) actionClass = 'prod'; // Green (Additions)
+                if (log.action.includes('Delete') || log.action.includes('Remove')) actionClass = 'stg'; // Orange (Deletions)
+
+                return `
+                    <div class="version-item" style="grid-template-columns: 90px 165px 135px 1fr; padding: 10px 20px; align-items: center; background: rgba(255,255,255,0.01);">
+                        <div class="text-view-sub" style="font-size: 12px;">${new Date(log.time * 1000).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+                        <div class="text-view-main" style="font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${log.email}</div>
+                        <div>
+                            <span class="env-badge-select ${actionClass}" style="font-size: 10px; padding: 2px 8px; height: auto; pointer-events: none; text-transform: uppercase;">${log.action}</span>
+                        </div>
+                        <div class="text-view-sub" style="font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 2px;">
+                            ${log.details}
+                            <div style="display: flex; align-items: center; gap: 2px; border-left: 1px solid rgba(255,255,255,0.1); margin-left: 6px; padding-left: 6px;">
+                                ${osIcon}${envBadge}${versionInfo}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        let analyticsCurrentPage = 1;
+        let analyticsPageSize = 10;
+        let analyticsData = [];
+
+        function updateAnalyticsPageSize(size) {
+            analyticsPageSize = parseInt(size);
+            analyticsCurrentPage = 1;
+            renderAnalytics();
+        }
+
+        async function loadAnalytics() {
+            const container = document.getElementById('analytics-content');
+            try {
+                const res = await fetch('/api/admin/analytics');
+                const data = await res.json();
+
+                if (Object.keys(data).length === 0) {
+                    container.innerHTML = `<div style="text-align:center; padding: 60px; color: var(--text-muted); background: rgba(0,0,0,0.1); border-radius: 20px;">No download data yet.</div>`;
+                    document.getElementById('analytics-pagination').style.display = 'none';
+                    return;
+                }
+
+                // Sorting logic
+                const envWeight = { 'prod': 1, 'rc': 2, 'stg': 3 };
+                analyticsData = Object.entries(data).sort((a, b) => {
+                    const statsA = a[1];
+                    const statsB = b[1];
+
+                    // 1. Version (Latest first)
+                    if (statsA.version !== statsB.version) {
+                        return statsB.version.localeCompare(statsA.version, undefined, { numeric: true, sensitivity: 'base' });
+                    }
+
+                    // 2. Environment (Prod > RC > STG)
+                    return (envWeight[statsA.env] || 99) - (envWeight[statsB.env] || 99);
+                });
+
+                analyticsCurrentPage = 1;
+                renderAnalytics();
+            } catch (err) {
+                container.innerHTML = `<div style="text-align:center; padding: 60px; color: #ef4444;">Failed to load analytics.</div>`;
+            }
+        }
+
+        function changeAnalyticsPage(dir) {
+            const maxPage = Math.ceil(analyticsData.length / analyticsPageSize);
+            const newPage = analyticsCurrentPage + dir;
+            if (newPage >= 1 && newPage <= maxPage) {
+                analyticsCurrentPage = newPage;
+                renderAnalytics();
+                document.getElementById('analytics-content').scrollTop = 0;
+            }
+        }
+
+        function renderAnalytics() {
+            const container = document.getElementById('analytics-content');
+            const paginator = document.getElementById('analytics-pagination');
+
+            const totalPages = Math.ceil(analyticsData.length / analyticsPageSize);
+            paginator.style.display = totalPages > 1 ? 'flex' : 'none';
+
+            document.getElementById('analytics-page-indicator').textContent = `${analyticsCurrentPage}/${totalPages}`;
+            document.getElementById('btn-analytics-prev').disabled = analyticsCurrentPage === 1;
+            document.getElementById('btn-analytics-next').disabled = analyticsCurrentPage === totalPages;
+
+            const start = (analyticsCurrentPage - 1) * analyticsPageSize;
+            const end = start + analyticsPageSize;
+            const pageData = analyticsData.slice(start, end);
+
+            let html = `
+                <div style="display: grid; grid-template-columns: 40px 100px 70px 80px 180px 100px 40px; gap: 12px; padding: 0 20px 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div class="header-label">OS</div>
+                    <div class="header-label">Version</div>
+                    <div class="header-label">Env</div>
+                    <div class="header-label" style="text-align: center;">Total</div>
+                    <div class="header-label">Last Download</div>
+                    <div class="header-label" style="text-align: center;">Today</div>
+                    <div></div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+            `;
+
+            const today = new Date().toISOString().split('T')[0];
+
+            pageData.forEach(([key, stats]) => {
+                const version = stats.version || '--';
+                const env = stats.env || 'prod';
+                const osType = stats.os || 'unknown';
+                const lastDate = stats.last_download ? new Date(stats.last_download * 1000).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '--';
+                const todayCount = stats.daily ? (stats.daily[today] || 0) : 0;
+
+                const safeKey = key.replace(/[|.]/g, '-');
+
+                // OS Icon logic
+                let osIcon = '';
+                if (osType === 'android') {
+                    osIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="#A4C639" title="Android"><path d="M17.523 15.3414C17.0653 15.3414 16.6908 14.9669 16.6908 14.5092C16.6908 14.0515 17.0653 13.677 17.523 13.677C17.9806 13.677 18.3551 14.0515 18.3551 14.5092C18.3551 14.9669 17.9806 15.3414 17.523 15.3414ZM6.47702 15.3414C6.01937 15.3414 5.64486 14.9669 5.64486 14.5092C5.64486 14.0515 6.01937 13.677 6.47702 13.677C6.93467 13.677 7.30918 14.0515 7.30918 14.5092C7.30918 14.9669 6.93467 15.3414 6.47702 15.3414ZM17.9015 10.6358L19.4623 7.9351C19.5888 7.71617 19.5131 7.43632 19.2941 7.30902C19.0752 7.18171 18.7954 7.25816 18.6673 7.47708L17.0784 10.2289C15.6322 9.57143 14.0044 9.19766 12.28 9.19766C10.5557 9.19766 8.92782 9.57143 7.48165 10.2289L5.89274 7.47708C5.76467 7.25816 5.48483 7.18171 5.26589 7.30902C5.04618 7.43632 4.97223 7.71617 5.09772 7.9351L6.65851 10.6358C2.96499 12.5937 0.449219 16.3533 0.449219 20.7303H24.1107C24.1107 16.3533 21.595 12.5937 17.9015 10.6358Z"/></svg>`;
+                } else if (osType === 'ios') {
+                    osIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="#cbd5e1" title="iOS"><path d="M17.062,12.639c-0.015-2.61,2.138-3.864,2.234-3.924c-1.21-1.77-3.09-2.013-3.76-2.041c-1.604-0.163-3.132,0.945-3.945,0.945 c-0.812,0-2.071-0.923-3.414-0.899c-1.761,0.026-3.385,1.026-4.29,2.596c-1.826,3.167-0.467,7.854,1.3,10.403 c0.865,1.248,1.892,2.645,3.238,2.596c1.295-0.048,1.785-0.835,3.35-0.835s2.007,0.835,3.36,0.806 c1.382-0.023,2.278-1.249,3.133-2.493c0.982-1.442,1.388-2.839,1.408-2.912c-0.03-0.015-2.709-1.04-2.738-4.131 c-0.025-2.583,2.112-3.819,2.215-3.879C17.05,12.648,17.062,12.639,17.062,12.639z M14.288,5.161 c0.718-0.869,1.203-2.08,1.069-3.284c-1.035,0.042-2.285,0.689-3.027,1.558c-0.665,0.771-1.247,2.008-1.09,3.187 C12.378,5.71,13.569,6.03,14.288,5.161z"/></svg>`;
+                } else {
+                    osIcon = `<span style="font-size: 10px; color: #64748b;">?</span>`;
+                }
+
+                html += `
+                    <div class="analytics-row-group" style="display:flex; flex-direction:column; background: rgba(255,255,255,0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; overflow: hidden;">
+                        <div class="version-item" style="display: grid; grid-template-columns: 40px 100px 70px 80px 180px 100px 40px; padding: 12px 20px; align-items: center; cursor: pointer; border: none; background: transparent;" onclick="toggleAnalyticsDetail('${safeKey}')">
+                            <div style="display: flex; align-items: center; justify-content: center;">${osIcon}</div>
+                            <div class="text-view-main">${version}</div>
+                            <div><span class="env-badge-select ${env}" style="font-size: 10px; padding: 2px 8px; pointer-events: none; text-transform: uppercase;">${env}</span></div>
+                            <div class="text-view-main" style="text-align: center; color: #60a5fa; font-weight: 700;">${stats.total}</div>
+                            <div class="text-view-sub" style="font-size: 12px;">${lastDate}</div>
+                            <div class="text-view-main" style="text-align: center; font-weight: 700; color: ${todayCount > 0 ? '#34d399' : '#64748b'};">${todayCount}</div>
+                            <div style="display: flex; justify-content: flex-end; color: #64748b;">
+                                <svg id="arrow-${safeKey}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="transition: transform 0.3s;">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                        <div id="details-${safeKey}" style="display: none; padding: 0 20px 16px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1);">
+                            <div style="margin-top: 12px;">
+                                <div style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.05em;">Recent Downloaders</div>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    ${(stats.downloads || []).slice().reverse().slice(0, 10).map(d => `
+                                        <div style="display: grid; grid-template-columns: 150px 1fr 140px; gap: 12px; font-size: 12px; color: #cbd5e1; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.02);">
+                                            <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${d.name}</div>
+                                            <div style="color: #94a3b8; font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis;">${d.email}</div>
+                                            <div style="color: #64748b; text-align: right; font-size: 11px;">${new Date(d.time * 1000).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+                                        </div>
+                                    `).join('') || '<div style="font-size: 12px; color: #64748b; padding: 10px 0;">No downloaders tracked yet.</div>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        let versionsCurrentPage = 1;
+        let versionsPageSize = 10;
+
+        function updateVersionsPageSize(size) {
+            versionsPageSize = parseInt(size);
+            versionsCurrentPage = 1;
+            renderVersions();
+        }
+
+        function changeVersionsPage(dir) {
+            const data = allData[currentOs] || [];
+            const maxPage = Math.ceil(data.length / versionsPageSize);
+            const newPage = versionsCurrentPage + dir;
+            if (newPage >= 1 && newPage <= maxPage) {
+                versionsCurrentPage = newPage;
+                renderVersions();
+                document.getElementById('versions-list').scrollTop = 0;
+            }
+        }
+
+        function renderVersions() {
+            const list = document.getElementById('versions-list');
+            list.innerHTML = '';
+            const data = allData[currentOs];
+
+            if (!data || data.length === 0) {
+                list.innerHTML = `<div style="text-align:center; padding: 60px; color: var(--text-muted); background: rgba(0,0,0,0.1); border-radius: 20px;">No deployments found.</div>`;
+                return;
+            }
+
+            data.forEach((v, realIndex) => {
+                // We need to keep track of the REAL index for editing/deleting
+            });
+
+            // Pagination Logic
+            const paginator = document.getElementById('versions-pagination');
+            const totalPages = Math.ceil(data.length / versionsPageSize);
+
+            if (data.length > 0) {
+                paginator.style.display = 'flex';
+                document.getElementById('versions-page-indicator').textContent = `${versionsCurrentPage}/${totalPages}`;
+                document.getElementById('btn-versions-prev').disabled = versionsCurrentPage === 1;
+                document.getElementById('btn-versions-next').disabled = versionsCurrentPage === totalPages;
+            } else {
+                paginator.style.display = 'none';
+            }
+
+            const start = (versionsCurrentPage - 1) * versionsPageSize;
+            const end = start + versionsPageSize;
+            const pageData = data.slice(start, end);
+
+            pageData.forEach((v) => {
+                // Find the original index in the full data array
+                const index = data.indexOf(v);
+
+                const item = document.createElement('div');
+                item.className = 'version-item';
+                item.style.gridTemplateColumns = '140px 1fr 140px 120px';
+                let fileKey = currentOs === 'android' ? 'apkFile' : 'ipaFile';
+
+                item.innerHTML = `
+                    <div class="field-group">
+                        <span class="field-label">Env & Version</span>
+                        <div style="display:flex; gap: 6px; align-items: center;">
+                            <select class="env-badge-select ${v.environment || 'prod'}" onchange="applyTemplate(${index}, this.value); this.className='env-badge-select '+this.value">
+                                <option value="prod" ${v.environment === 'prod' ? 'selected' : ''}>PROD</option>
+                                <option value="rc" ${v.environment === 'rc' ? 'selected' : ''}>RC</option>
+                                <option value="stg" ${v.environment === 'stg' ? 'selected' : ''}>STG</option>
+                            </select>
+                            <input type="text" class="input-minimal" style="font-size: 11px; text-align: center; height: 32px; width: 70px;" placeholder="v1.0.0" value="${v.version || ''}" onchange="updateVal(${index}, 'version', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <span class="field-label">Info & Asset</span>
+                        <div class="text-view-main">${v.appName || '--'}</div>
+                        <div id="file-display-${index}" class="asset-name-text ${v[fileKey] ? '' : 'empty'}">
+                            ${v[fileKey] || 'No file uploaded'}
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <span class="field-label">Release Date</span>
+                        <input type="date" class="input-minimal" value="${v.date || ''}" onchange="updateVal(${index}, 'date', this.value)">
+                    </div>
+
+                    <div style="display:flex; justify-content: center; gap: 8px;">
+                        <button onclick="toggleChangelog(this, ${index})" class="btn-upload-min toggle-changelog-btn ${v.changelog ? 'active' : ''}" title="Edit Changelog">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button onclick="triggerUpload(${index})" class="btn-upload-min" id="up-btn-${index}" title="Upload File">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </button>
+                        <button class="delete-btn" data-delete-index="${index}" title="Delete Version">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                        <input type="file" id="file-selector-${index}" style="display:none" onchange="handleFileUpload(${index}, this.files[0])" accept="${currentOs === 'android' ? '.apk' : '.ipa'}">
+                    </div>
+
+                    <div class="changelog-section" id="changelog-${index}">
+                        <div class="header-label" style="margin-bottom: 8px;">Edit Release Notes (Changes for v${v.version || '?'})</div>
+                        <textarea class="input-minimal" style="height: 100px; padding: 12px; resize: vertical; font-size: 13px; line-height: 1.5;" 
+                            placeholder="Describe what's new in this version..." 
+                            onchange="updateVal(${index}, 'changelog', this.value); this.closest('.version-item').querySelector('.toggle-changelog-btn').classList.toggle('active', !!this.value)">${v.changelog || ''}</textarea>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        let expandedWhitelistIndices = new Set();
+
+        let whitelistCurrentPage = 1;
+        let whitelistPageSize = 10;
+
+        function updateWhitelistPageSize(size) {
+            whitelistPageSize = parseInt(size);
+            whitelistCurrentPage = 1;
+            renderWhitelist();
+        }
+
+        function changeWhitelistPage(dir) {
+            const searchTerm = document.getElementById('whitelist-search').value.toLowerCase();
+            const filteredData = whitelistData.filter(u =>
+                (u.name || '').toLowerCase().includes(searchTerm) ||
+                (u.email || '').toLowerCase().includes(searchTerm) ||
+                (u.note || '').toLowerCase().includes(searchTerm)
+            );
+
+            const maxPage = Math.ceil(filteredData.length / whitelistPageSize);
+            const newPage = whitelistCurrentPage + dir;
+            if (newPage >= 1 && newPage <= maxPage) {
+                whitelistCurrentPage = newPage;
+                renderWhitelist();
+                document.getElementById('whitelist-list').scrollTop = 0;
+            }
+        }
+
+        function renderWhitelist() {
+            const list = document.getElementById('whitelist-list');
+            list.innerHTML = '';
+
+            const searchTerm = document.getElementById('whitelist-search').value.toLowerCase();
+            const filteredData = whitelistData.filter(u =>
+                (u.name || '').toLowerCase().includes(searchTerm) ||
+                (u.email || '').toLowerCase().includes(searchTerm) ||
+                (u.note || '').toLowerCase().includes(searchTerm)
+            );
+
+            if (filteredData.length === 0) {
+                list.innerHTML = `<div style="text-align:center; padding: 40px; color: var(--text-muted);">${searchTerm ? 'No users matching search.' : 'No authorized users.'}</div>`;
+                document.getElementById('whitelist-pagination').style.display = 'none';
+                return;
+            }
+
+            // Pagination Logic
+            const paginator = document.getElementById('whitelist-pagination');
+            const totalPages = Math.ceil(filteredData.length / whitelistPageSize);
+
+            if (totalPages > 0) {
+                paginator.style.display = 'flex';
+                document.getElementById('whitelist-page-indicator').textContent = `${whitelistCurrentPage}/${totalPages}`;
+                document.getElementById('btn-whitelist-prev').disabled = whitelistCurrentPage === 1;
+                document.getElementById('btn-whitelist-next').disabled = whitelistCurrentPage === totalPages;
+            } else {
+                paginator.style.display = 'none';
+            }
+
+            const start = (whitelistCurrentPage - 1) * whitelistPageSize;
+            const end = start + whitelistPageSize;
+            const pageData = filteredData.slice(start, end);
+
+            pageData.forEach((u) => {
+                const index = whitelistData.indexOf(u);
+                const isFirst = index === 0;
+                const isLast = index === whitelistData.length - 1;
+
+                const card = document.createElement('div');
+                card.className = 'user-card';
+                card.innerHTML = `
+                    <div class="user-main-row">
+                        <div class="order-controls">
+                            <button class="btn-order" onclick="moveWhitelistUser(${index}, -1)" ${isFirst ? 'disabled' : ''}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            </button>
+                            <button class="btn-order" onclick="moveWhitelistUser(${index}, 1)" ${isLast ? 'disabled' : ''}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15" transform="rotate(180 12 12)"></polyline></svg>
+                            </button>
+                        </div>
+                        
+                        <input type="text" class="input-minimal" style="font-weight: 600;" placeholder="Name" value="${u.name || ''}" onchange="updateWhitelistVal(${index}, 'name', this.value)">
+                        <input type="email" class="input-minimal" style="opacity: 0.7; font-size: 13px;" placeholder="Email" value="${u.email || ''}" onchange="updateWhitelistVal(${index}, 'email', this.value)">
+                        
+                        <select class="env-badge-select ${u.userType === 'Internal' ? 'prod' : 'stg'}" style="width: 100%;" onchange="updateWhitelistVal(${index}, 'userType', this.value); this.className = 'env-badge-select ' + (this.value === 'Internal' ? 'prod' : 'stg')">
+                            <option value="Internal" ${u.userType === 'Internal' ? 'selected' : ''}>Internal</option>
+                            <option value="External" ${u.userType === 'External' ? 'selected' : ''}>External</option>
+                        </select>
+
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <button onclick="toggleWhitelistDetail(this, ${index})" class="btn-toggle-user ${expandedWhitelistIndices.has(index) ? 'active' : ''}" title="Expand Details">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </button>
+                            <button class="delete-btn delete-whitelist-btn" data-whitelist-index="${index}">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="user-details-drawer ${expandedWhitelistIndices.has(index) ? 'show' : ''}" id="user-details-${index}">
+                        <div class="user-col">
+                            <div class="user-info-group">
+                                <span class="user-info-label">Push Notifications</span>
+                                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                    <select class="input-minimal" style="height:36px; width: 120px;" onchange="updateWhitelistVal(${index}, 'sendPlatform', this.value)">
+                                        <option value="" ${u.sendPlatform === '' ? 'selected' : ''}>No Alerts</option>
+                                        <option value="mattermost" ${u.sendPlatform === 'mattermost' ? 'selected' : ''}>Mattermost</option>
+                                        <option value="whatsapp" ${u.sendPlatform === 'whatsapp' ? 'selected' : ''}>WhatsApp</option>
+                                    </select>
+                                    <input type="text" class="input-minimal" style="height:36px; flex: 1;" placeholder="Handle / @user" value="${u.sendTo || ''}" onchange="updateWhitelistVal(${index}, 'sendTo', this.value)">
+                                </div>
+                            </div>
+                            <div class="user-info-group">
+                                <span class="user-info-label">Internal Notes</span>
+                                <input type="text" class="input-minimal" style="height:36px; margin-top: 4px;" placeholder="Notes" value="${u.notes || ''}" onchange="updateWhitelistVal(${index}, 'notes', this.value)">
+                            </div>
+                        </div>
+
+                        <div class="user-col">
+                            <div class="user-info-group">
+                                <span class="user-info-label">Access Permissions</span>
+                                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+                                    <div class="checkbox-group">
+                                        <label class="check-label icon-only" title="Android">
+                                            <input type="checkbox" ${u.availableOs.includes('android') ? 'checked' : ''} onchange="togglePermission(${index}, 'availableOs', 'android')"> 
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.3414C18.173 15.3414 18.7 14.8144 18.7 14.1644C18.7 13.5144 18.173 12.9874 17.523 12.9874C16.873 12.9874 16.346 13.5144 16.346 14.1644C16.346 14.8144 16.873 15.3414 17.523 15.3414ZM6.47702 15.3414C7.12702 15.3414 7.65402 14.8144 7.65402 14.1644C7.65402 13.5144 7.12702 12.9874 6.47702 12.9874C5.82702 12.9874 5.30002 13.5144 5.30002 14.1644C5.30002 14.8144 5.82702 15.3414 6.47702 15.3414ZM17.915 10.3344L19.742 7.16839C19.864 6.95739 19.791 6.68839 19.58 6.56639C19.369 6.44439 19.1 6.51739 18.978 6.72839L17.13 9.92839C15.688 9.27239 14.07 8.91039 12.35 8.91039C10.63 8.91039 9.01202 9.27239 7.57002 9.92839L5.72202 6.72839C5.60002 6.51739 5.33102 6.44439 5.12002 6.56639C4.90902 6.68839 4.83602 6.95739 4.95802 7.16839L6.78502 10.3344C3.80502 11.9364 1.76902 14.9964 1.65002 18.5754H23.051C22.932 14.9964 20.895 11.9364 17.915 10.3344Z"/></svg>
+                                        </label>
+                                        <label class="check-label icon-only" title="iOS">
+                                            <input type="checkbox" ${u.availableOs.includes('ios') ? 'checked' : ''} onchange="togglePermission(${index}, 'availableOs', 'ios')"> 
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.96.95-2.04 1.78-3.23 2.14-1.29.39-2.22.4-3.55.01-1.22-.36-2.13-1.04-3.13-2.04-2.58-2.6-3.8-7.39-2.11-10.43 1.05-1.89 3.01-3.04 4.88-3.04.66 0 1.25.13 1.83.39 1.48.66 1.95.83 3.63.15 1.09-.44 2.13-.75 3.32-.4 1.49.44 2.65 1.25 3.48 2.52-3.09 1.62-3.69 6.4-1.01 8.7a8.5 8.5 0 011.01.89c-.61 1.74-2.14 1.2 -3.14 2.1zM11.97 4.74c-.02-2.1 1.73-3.89 3.51-4.7 1.88 1.43 1.88 4.3 0 5.86-1.58 1.3 -3.51.93-3.51-1.16z"/></svg>
+                                        </label>
+                                    </div>
+                                    <div class="checkbox-group">
+                                        <label class="check-label"><input type="checkbox" ${u.availableEnv.includes('stg') ? 'checked' : ''} onchange="togglePermission(${index}, 'availableEnv', 'stg')"> STG</label>
+                                        <label class="check-label"><input type="checkbox" ${u.availableEnv.includes('rc') ? 'checked' : ''} onchange="togglePermission(${index}, 'availableEnv', 'rc')"> RC</label>
+                                        <label class="check-label"><input type="checkbox" ${u.availableEnv.includes('prod') ? 'checked' : ''} onchange="togglePermission(${index}, 'availableEnv', 'prod')"> PROD</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function toggleWhitelistDetail(btn, index) {
+            const drawer = document.getElementById(`user-details-${index}`);
+            const isExpanding = !drawer.classList.contains('show');
+
+            if (isExpanding) {
+                expandedWhitelistIndices.add(index);
+            } else {
+                expandedWhitelistIndices.delete(index);
+            }
+
+            drawer.classList.toggle('show');
+            btn.classList.toggle('active');
+        }
+
+        function addWhitelistUser() {
+            whitelistData.unshift({
+                name: '',
+                email: '',
+                userType: 'Internal',
+                availableOs: ['android', 'ios'],
+                availableEnv: ['stg', 'rc', 'prod'],
+                sendPlatform: '',
+                sendTo: '',
+                notes: ''
+            });
+            // Update indices in the set because we unshifted
+            const newSet = new Set();
+            expandedWhitelistIndices.forEach(idx => newSet.add(idx + 1));
+            newSet.add(0); // Show the new one
+            expandedWhitelistIndices = newSet;
+
+            renderWhitelist();
+        }
+
+        function updateWhitelistVal(index, key, val) {
+            whitelistData[index][key] = val;
+            saveWhitelist();
+        }
+
+        function togglePermission(index, key, val) {
+            const arr = whitelistData[index][key];
+            const idx = arr.indexOf(val);
+            if (idx > -1) arr.splice(idx, 1);
+            else arr.push(val);
+            saveWhitelist();
+        }
+
+        async function removeWhitelistUser(index) {
+            const confirmed = await showConfirmModal('Remove this user from whitelist?');
+            if (confirmed) {
+                whitelistData.splice(index, 1);
+
+                // Adjust expansion indices
+                const newSet = new Set();
+                expandedWhitelistIndices.forEach(idx => {
+                    if (idx < index) newSet.add(idx);
+                    else if (idx > index) newSet.add(idx - 1);
+                });
+                expandedWhitelistIndices = newSet;
+
+                renderWhitelist();
+                await saveWhitelist();
+            }
+        }
+
+        async function moveWhitelistUser(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= whitelistData.length) return;
+
+            // Swap expansion state
+            const wasExpanded = expandedWhitelistIndices.has(index);
+            const wasNewExpanded = expandedWhitelistIndices.has(newIndex);
+
+            if (wasExpanded) expandedWhitelistIndices.add(newIndex);
+            else expandedWhitelistIndices.delete(newIndex);
+
+            if (wasNewExpanded) expandedWhitelistIndices.add(index);
+            else expandedWhitelistIndices.delete(index);
+
+            // Swap elements
+            const temp = whitelistData[index];
+            whitelistData[index] = whitelistData[newIndex];
+            whitelistData[newIndex] = temp;
+
+            renderWhitelist();
+            await saveWhitelist();
+        }
+
+        function triggerUpload(index) { document.getElementById(`file-selector-${index}`).click(); }
+
+        async function handleFileUpload(index, file) {
+            if (!file) return;
+            const btn = document.getElementById(`up-btn-${index}`);
+            const originalBtnContent = btn.innerHTML;
+
+            return new Promise((resolve, reject) => {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const xhr = new XMLHttpRequest();
+
+                // Set a longer timeout (10 minutes for large files)
+                xhr.timeout = 600000; // 10 minutes in milliseconds
+
+                // Progress tracking
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        btn.innerHTML = `<div style="font-size:10px; font-weight:600; color:white;">${percentComplete}%</div>`;
+                    }
+                });
+
+                // Upload complete
+                xhr.addEventListener('load', () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const data = JSON.parse(xhr.responseText);
+                            if (data.status === 'success') {
+                                const fileKey = currentOs === 'android' ? 'apkFile' : 'ipaFile';
+                                updateVal(index, fileKey, data.filename);
+                                const display = document.getElementById(`file-display-${index}`);
+                                if (display) {
+                                    display.textContent = data.filename;
+                                    display.classList.remove('empty');
+                                }
+                                showToast('File uploaded!');
+                                resolve();
+                            } else {
+                                alert('Upload failed: ' + (data.error || 'Server error'));
+                                reject(new Error(data.error || 'Server error'));
+                            }
+                        } catch (err) {
+                            alert('Upload error: Invalid server response');
+                            reject(err);
+                        }
+                    } else {
+                        const errorMsg = `Server error (${xhr.status}): ${xhr.responseText.substring(0, 100)}`;
+                        alert('Upload error: ' + errorMsg);
+                        reject(new Error(errorMsg));
+                    }
+                    btn.innerHTML = originalBtnContent;
+                });
+
+                // Error handling
+                xhr.addEventListener('error', () => {
+                    alert('Upload error: Network error. Please check your connection.');
+                    btn.innerHTML = originalBtnContent;
+                    reject(new Error('Network error'));
+                });
+
+                // Timeout handling
+                xhr.addEventListener('timeout', () => {
+                    alert('Upload error: Request timed out. The file might be too large or the connection is too slow.');
+                    btn.innerHTML = originalBtnContent;
+                    reject(new Error('Timeout'));
+                });
+
+                // Abort handling
+                xhr.addEventListener('abort', () => {
+                    alert('Upload was cancelled.');
+                    btn.innerHTML = originalBtnContent;
+                    reject(new Error('Aborted'));
+                });
+
+                // Show initial spinner
+                btn.innerHTML = `<div class="spinner-min" style="width:14px; height:14px; border: 2px solid white; border-top-color:transparent; border-radius:50%; animation: spin 0.8s linear infinite;"></div>`;
+
+                // Send the request
+                // Use direct upload URL if configured (to bypass Cloudflare timeout)
+                const uploadUrl = appConfig.uploadUrl || '/api/admin/upload';
+                xhr.open('POST', uploadUrl);
+                xhr.send(formData);
+            });
+        }
+
+        function updateVal(index, key, val) { allData[currentOs][index][key] = val; }
+
+        async function applyTemplate(index, env) {
+            updateVal(index, 'environment', env);
+
+            try {
+                // Load app_config.json
+                const res = await fetch('/app_config.json');
+                const appConfigData = await res.json();
+
+                // Get config for the selected environment
+                const envConfig = appConfigData[env];
+
+                if (envConfig) {
+                    // Apply appName from config
+                    if (envConfig.appName) {
+                        updateVal(index, 'appName', envConfig.appName);
+                    }
+
+                    // Apply bundleId from config (for iOS)
+                    if (envConfig.bundleId && currentOs === 'ios') {
+                        updateVal(index, 'bundleId', envConfig.bundleId);
+                    }
+                }
+            } catch (err) { }
+
+            renderVersions(); // Re-render to show updated template values
+        }
+
+        function showConfirmModal(message) {
+            return new Promise((resolve) => {
+                document.getElementById('modalMessage').textContent = message;
+                document.getElementById('confirmModal').classList.add('show');
+                confirmCallback = resolve;
+            });
+        }
+
+        function closeConfirmModal(confirmed) {
+            document.getElementById('confirmModal').classList.remove('show');
+            if (confirmCallback) {
+                confirmCallback(confirmed);
+                confirmCallback = null;
+            }
+        }
+
+        async function removeRow(index) {
+            // Prevent multiple simultaneous delete operations
+            if (isDeleting) {
+                return;
+            }
+
+            const confirmed = await showConfirmModal('Remove this version and delete the binary file from server?');
+
+            if (!confirmed) {
+                return;
+            }
+
+            isDeleting = true;
+            try {
+                const version = allData[currentOs][index];
+                const fileKey = currentOs === 'android' ? 'apkFile' : 'ipaFile';
+                const filename = version[fileKey];
+
+                if (filename) {
+                    try {
+                        await fetch('/api/admin/delete-file', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ filename: filename, os: currentOs })
+                        });
+                    } catch (err) { }
+                }
+
+                allData[currentOs].splice(index, 1);
+                renderVersions();
+                await saveVersions();
+                showToast('Version and file removed.');
+            } finally {
+                isDeleting = false;
+            }
+        }
+
+        function addVersionRow() {
+            const baseName = appConfig.appName || 'App';
+            const newItem = { appName: baseName, version: '', environment: 'prod', date: getLocalDate() };
+            if (currentOs === 'android') newItem.apkFile = ''; else { newItem.ipaFile = ''; newItem.bundleId = ''; }
+
+            // Default bundleId from PROD template if available
+            if (appConfig.appTemplates && appConfig.appTemplates['prod']) {
+                const t = appConfig.appTemplates['prod'];
+                if (t.bundleId && currentOs === 'ios') newItem.bundleId = t.bundleId;
+            }
+
+            allData[currentOs].unshift(newItem);
+            renderVersions();
+        }
+
+        async function saveVersions() {
+            try {
+                await fetch('/api/admin/versions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ os: currentOs, versions: allData[currentOs] })
+                });
+                showToast('Changes saved!');
+            } catch (err) { alert('Save failed'); }
+        }
+
+        async function saveWhitelist() {
+            try {
+                await fetch('/api/admin/whitelist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(whitelistData)
+                });
+                showToast('Whitelist saved!');
+            } catch (err) { alert('Save failed'); }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        async function logout() { await fetch('/logout'); location.href = '/'; }
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentOs = btn.dataset.os;
+                renderVersions();
+            });
+        });
+
+        // Event delegation for version delete buttons
+        document.getElementById('versions-list').addEventListener('click', function (e) {
+            const deleteBtn = e.target.closest('.delete-btn[data-delete-index]');
+            if (deleteBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const index = parseInt(deleteBtn.getAttribute('data-delete-index'));
+                removeRow(index);
+            }
+        });
+
+        // Event delegation for whitelist delete buttons
+        document.getElementById('whitelist-list').addEventListener('click', function (e) {
+            const deleteBtn = e.target.closest('.delete-whitelist-btn[data-whitelist-index]');
+            if (deleteBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const index = parseInt(deleteBtn.getAttribute('data-whitelist-index'));
+                removeWhitelistUser(index);
+            }
+        });
+
+        init();
+        fetchSystemStats();
+
+        async function fetchSystemStats() {
+            try {
+                const res = await fetch('/api/admin/system-stats');
+                if (res.ok) {
+                    const stats = await res.json();
+                    const diskContainer = document.getElementById('disk-usage-container');
+                    const diskFill = document.getElementById('disk-bar-fill');
+                    const diskText = document.getElementById('disk-text');
+
+                    if (diskContainer) {
+                        diskContainer.style.display = 'flex';
+                        const pct = stats.disk_percent;
+                        diskFill.style.width = `${pct}%`;
+                        diskText.textContent = `${pct}%`;
+
+                        diskFill.className = 'disk-bar-fill';
+                        if (pct > 70) diskFill.classList.add('warning');
+                        if (pct > 90) diskFill.classList.add('danger');
+                    }
+                }
+            } catch (e) { }
+        }
+    </script>
+</body>
+
+</html>

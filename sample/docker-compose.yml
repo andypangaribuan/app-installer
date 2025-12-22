@@ -1,0 +1,14 @@
+services:
+  app-installer:
+    container_name: app-installer
+    image: app-installer:v1.0
+    ports:
+      - 8080:8080
+    volumes:
+      - ./vol/public:/app/public:shared
+      - ./vol/.env:/app/.env:shared
+      - ./vol/analytics.json:/app/analytics.json:shared
+      - ./vol/app_config.json:/app/app_config.json:shared
+      - ./vol/audit_logs.json:/app/audit_logs.json:shared
+      - ./vol/whitelist.json:/app/whitelist.json:shared
+    restart: unless-stopped

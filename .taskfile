@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Copyright (c) 2025.
+# Created by Andy Pangaribuan. All Rights Reserved.
+# This product is protected by copyright and distributed under
+# licenses restricting copying, distribution and decompilation.
+
+. ~/.base-taskfile
+
+#: archive the project and send to production server
+function archive {
+  cd ..
+  tar --no-xattrs --no-mac-metadata \
+    --exclude='./app-installer/public' \
+    --exclude='./app-installer/analytics.json' \
+    --exclude='./app-installer/audit_logs.json' \
+    --exclude='./app-installer/server_log.txt' \
+    --exclude='./app-installer/.git' \
+    -zcf app-installer.tar.gz ./app-installer
+
+  scp app-installer.tar.gz s3-sg-ark:/files/mnt/docker/build2
+
+  echo "use this command to extract the file: tar -xzf app-installer.tar.gz"
+}
+
+
+#: space
+___ "$@"

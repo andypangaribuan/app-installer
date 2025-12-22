@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installing App...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <h1 id="title">Preparing Installation...</h1>
+        <p id="message">Please wait while we redirect you to the app installation.</p>
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const appName = params.get('appName');
+        const bundleId = params.get('bundleId');
+        const version = params.get('version');
+        const ipa = params.get('ipa');
+        const magicToken = params.get('magic_token');
+
+        const title = document.getElementById('title');
+        const message = document.getElementById('message');
+        const errorDiv = document.getElementById('error');
+
+        // Detect if iOS
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        if (!isIOS) {
+            // Not iOS - show error
+            title.textContent = 'iOS Device Required';
+            message.textContent = 'This installation link is for iOS devices only. Please scan the QR code with an iPhone or iPad.';
+            document.querySelector('.spinner').style.display = 'none';
+        } else if (!appName || !bundleId || !version || !ipa) {
+            // Missing parameters
+            title.textContent = 'Invalid Link';
+            message.textContent = 'This installation link is missing required parameters. Please generate a new QR code.';
+            document.querySelector('.spinner').style.display = 'none';
+        } else {
+            // Build manifest URL
+            const manifestUrl = `${window.location.origin}/manifest.plist?appName=${encodeURIComponent(appName)}&bundleId=${encodeURIComponent(bundleId)}&version=${encodeURIComponent(version)}&ipa=${encodeURIComponent(ipa)}${magicToken ? '&magic_token=' + magicToken : ''}`;
+
+            // Build itms-services URL
+            const itmsUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(manifestUrl)}`;
+
+            // Update message
+            title.textContent = `Installing ${appName}`;
+            message.textContent = 'Redirecting to iOS installation...';
+
+            // Redirect after a short delay
+            setTimeout(() => {
+                window.location.href = itmsUrl;
+
+                // Show instructions after redirect attempt
+                setTimeout(() => {
+                    title.textContent = 'Installation Started';
+                    message.innerHTML = `
+                        <strong>If the installation didn't start:</strong><br><br>
+                        1. Tap "Allow" if prompted<br>
+                        2. Go to Settings → General → VPN & Device Management<br>
+                        3. Trust the developer certificate<br>
+                        4. Return to home screen and open the app
+                    `;
+                    document.querySelector('.spinner').style.display = 'none';
+                }, 2000);
+            }, 500);
+        }
+    </script>
+</body>
+
+</html>

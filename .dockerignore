@@ -1,0 +1,14 @@
+.git
+.agent
+
+.env
+analytics.json
+app_config.json
+audit_logs.json
+docker-compose.yml
+Dockerfile
+server_log.txt
+whitelist.json
+
+*.tar.gz
+*.md

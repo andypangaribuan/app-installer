@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>App Installer</title>
+  <link rel="stylesheet" href="./style.css?v=4">
+  <link rel="stylesheet" href="./style-qr.css?v=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <meta name="google-client-id" content="<!-- GOOGLE_CLIENT_ID_PLACEHOLDER -->">
+</head>
+
+<body>
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-card">
+      <img src="/public/app.png" class="app-logo-large" alt="App Logo">
+      <h2>Welcome</h2>
+      <p>Please sign in with your authorized Google account to continue.</p>
+      <div id="google-signin-btn"></div>
+      <p id="login-error" class="login-error hidden"></p>
+    </div>
+  </div>
+
+  <div id="app" class="hidden">
+    <div class="container">
+      <div class="top-nav-actions">
+        <div id="admin-link-wrapper" class="hidden">
+          <a href="/admin" class="nav-icon-btn" title="Admin Portal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </a>
+        </div>
+        <div id="logout-wrapper" class="hidden">
+          <button id="logout-btn" class="nav-icon-btn" title="Sign Out">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+              <line x1="12" y1="2" x2="12" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <header class="header">
+        <img src="/public/app.png" class="app-logo" alt="App Logo">
+        <h1 id="app-title">...</h1>
+        <p class="subtitle">Securely install the latest version for your device.</p>
+      </header>
+
+      <main class="download-section">
+        <div id="loading-state" class="state-container">
+          <div class="spinner"></div>
+          <p>Detecting your device...</p>
+        </div>
+
+        <div id="dynamic-header" class="state-container hidden">
+          <!-- Title injected by main.js -->
+        </div>
+
+        <div id="controls-wrapper" class="controls-wrapper hidden">
+          <div id="os-icon-slot" class="os-icon-slot"></div>
+          <div id="env-selector" class="env-tabs">
+            <button class="tab-btn active" data-env="prod">PROD</button>
+            <button class="tab-btn" data-env="rc">RC</button>
+            <button class="tab-btn" data-env="stg">STG</button>
+          </div>
+        </div>
+
+        <div id="dynamic-content" class="state-container hidden">
+          <!-- Content injected by main.js -->
+        </div>
+
+        <div id="app-pagination" class="pagination-container hidden">
+          <button id="btn-prev" class="btn-pagination" title="Previous">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <div id="page-indicator" class="page-indicator">1/1</div>
+          <button id="btn-next" class="btn-pagination" title="Next">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+
+
+      </main>
+
+      <footer>
+        <p id="app-footer">© ... All rights reserved.</p>
+      </footer>
+    </div>
+  </div>
+  <div id="qr-modal" class="qr-modal-overlay" style="display: none;">
+    <div class="qr-modal-content">
+      <div class="qr-title">Scan to Install</div>
+      <p class="qr-text" id="qr-text">Scan with your mobile camera to install directly.</p>
+      <img id="qr-image" class="qr-image" src="" alt="QR Code" />
+      <p class="qr-text" style="font-size: 12px; opacity: 0.6; margin-top: -10px; margin-bottom: 20px;">Link expires in
+        5 minutes</p>
+      <button onclick="closeQrModal()" class="btn-close-qr">Close</button>
+    </div>
+  </div>
+  <script type="module" src="/main.js?v=8"></script>
+</body>
+
+</html>
