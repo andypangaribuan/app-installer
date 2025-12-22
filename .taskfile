@@ -26,7 +26,7 @@ function archive {
 
 #: build docker image
 function build {
-  version=1.0.0
+  version=1.0.1
   image=ghcr.io/andypangaribuan/app-installer
 
   docker rmi $image:$version || true
