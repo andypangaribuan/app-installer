@@ -123,6 +123,7 @@ def send_push_notification(app_data, os_type):
             'environment': app_data.get('environment', 'prod'),
             'release_date': app_data.get('date', ''),
             'os_type': os_type,
+            'app_installer_url': env.get('APP_INSTALLER_URL', ''),
             'whitelist': whitelist_data
         }
         
