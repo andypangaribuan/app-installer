@@ -24,5 +24,17 @@ function archive {
 }
 
 
+#: build docker image
+function build {
+  version=1.0.0
+  image=ghcr.io/andypangaribuan/app-installer
+
+  docker rmi $image:$version || true
+  docker build --no-cache \
+    -t $image:$version \
+    -f ./Dockerfile .
+}
+
+
 #: space
 ___ "$@"
