@@ -90,6 +90,7 @@ __pypackages__/
 
 # Environments
 .env
+!sample/vol/.env
 .envrc
 .venv
 env/
@@ -110,5 +111,5 @@ dmypy.json
 .pytype/
 
 
-./public/download/*
+public/download/*
 
