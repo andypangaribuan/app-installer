@@ -12,13 +12,14 @@ import qrcode
 import io
 
 PORT = 8080
-SESSIONS = {} # {token: {"email": email, "expires": timestamp}}
-QR_TOKENS = {} # {magic_token: {"email": email, "expires": timestamp}}
-SESSION_DURATION = 300 # 5 minutes in seconds
-QR_TOKEN_DURATION = 300 # 5 minutes
-ADMIN_SESSION_DURATION = 3600 # 1 hour in seconds
+SESSIONS = {}  # {token: {"email": email, "expires": timestamp}}
+QR_TOKENS = {}  # {magic_token: {"email": email, "expires": timestamp}}
+SESSION_DURATION = 300  # 5 minutes in seconds
+QR_TOKEN_DURATION = 300  # 5 minutes
+ADMIN_SESSION_DURATION = 3600  # 1 hour in seconds
 ANALYTICS_FILE = 'analytics.json'
 AUDIT_LOG_FILE = 'audit_logs.json'
+
 
 def log_audit(user_email, action, details, os_type=None, env=None, version=None):
     """Log admin actions to audit_logs.json"""
@@ -27,7 +28,7 @@ def log_audit(user_email, action, details, os_type=None, env=None, version=None)
         if os.path.exists(AUDIT_LOG_FILE):
             with open(AUDIT_LOG_FILE, 'r') as f:
                 logs = json.load(f)
-        
+
         entry = {
             'time': int(time.time()),
             'email': user_email,
@@ -37,14 +38,15 @@ def log_audit(user_email, action, details, os_type=None, env=None, version=None)
             'env': env,
             'version': version
         }
-        
-        logs.insert(0, entry) # Newest first
-        logs = logs[:500] # Keep last 500 actions
-        
+
+        logs.insert(0, entry)  # Newest first
+        logs = logs[:500]  # Keep last 500 actions
+
         with open(AUDIT_LOG_FILE, 'w') as f:
             json.dump(logs, f, indent=4)
     except Exception as e:
         print(f"Error logging audit: {e}")
+
 
 def load_env():
     env = {}
@@ -62,6 +64,7 @@ def load_env():
         print(f"Error loading .env: {e}")
     return env
 
+
 def is_whitelisted(email):
     if not os.path.exists('whitelist.json'):
         return None
@@ -75,21 +78,26 @@ def is_whitelisted(email):
         print(f"Error reading whitelist: {e}")
     return None
 
+
 def get_admins():
     env = load_env()
     admin_str = env.get('ADMIN_EMAILS', '')
     return [e.strip().lower() for e in admin_str.split(',') if e.strip()]
+
 
 def get_super_admins():
     env = load_env()
     super_admin_str = env.get('SUPER_ADMIN_EMAILS', '')
     return [e.strip().lower() for e in super_admin_str.split(',') if e.strip()]
 
+
 def is_admin(email):
     return email.lower() in get_admins()
 
+
 def is_super_admin(email):
     return email.lower() in get_super_admins()
+
 
 def send_push_notification(app_data, os_type):
     """
@@ -100,22 +108,22 @@ def send_push_notification(app_data, os_type):
     env = load_env()
     push_url = env.get('PUSH_NOTIFICATION_URL', '')
     push_header = env.get('PUSH_NOTIFICATION_HEADER', '')
-    
+
     # Skip if URL is empty or "-"
     if not push_url or push_url == '-':
         return
-    
+
     # Skip if header is empty or "-"
     if not push_header or push_header == '-':
         return
-    
+
     try:
         # Load whitelist data
         whitelist_data = []
         if os.path.exists('whitelist.json'):
             with open('whitelist.json', 'r') as f:
                 whitelist_data = json.load(f)
-        
+
         # Prepare notification payload
         payload = {
             'app_name': app_data.get('appName', ''),
@@ -126,7 +134,7 @@ def send_push_notification(app_data, os_type):
             'app_installer_url': env.get('APP_INSTALLER_URL', ''),
             'whitelist': whitelist_data
         }
-        
+
         # Prepare request
         data = json.dumps(payload).encode('utf-8')
         req = urllib.request.Request(
@@ -138,13 +146,14 @@ def send_push_notification(app_data, os_type):
             },
             method='POST'
         )
-        
+
         # Send request
         with urllib.request.urlopen(req, timeout=10) as response:
             print(f"Push notification sent successfully: {response.status}")
-            
+
     except Exception as e:
         print(f"Failed to send push notification: {e}")
+
 
 def log_download(filename, user_name="Guest", user_email="Guest"):
     """Log a download event to analytics.json using version|env as key"""
@@ -154,11 +163,11 @@ def log_download(filename, user_name="Guest", user_email="Guest"):
         if os.path.exists(ANALYTICS_FILE):
             with open(ANALYTICS_FILE, 'r') as f:
                 data = json.load(f)
-        
+
         # Try to find version/env info for the filename
         version = "Unknown Version"
         env = "prod"
-        
+
         found_os = "unknown"
         found = False
         for os_type in ['android', 'ios']:
@@ -177,32 +186,33 @@ def log_download(filename, user_name="Guest", user_email="Guest"):
                                 break
                     except Exception as e:
                         print(f"DEBUG: Error reading {v_file}: {e}")
-            if found: break
+            if found:
+                break
 
         key = f"{found_os}|{version}|{env}"
         print(f"DEBUG: Analytics key determined as: {key}")
         today = time.strftime('%Y-%m-%d')
-        
+
         if key not in data:
             data[key] = {'total': 0, 'daily': {}, 'version': version, 'env': env, 'os': found_os}
-            
+
         data[key]['total'] += 1
         data[key]['daily'][today] = data[key]['daily'].get(today, 0) + 1
         data[key]['last_download'] = int(time.time())
-        
+
         # Track user who downloaded
         if 'downloads' not in data[key]:
             data[key]['downloads'] = []
-            
+
         data[key]['downloads'].append({
             'name': user_name,
             'email': user_email,
             'time': int(time.time())
         })
-        
+
         # Keep last 50 entries
         data[key]['downloads'] = data[key]['downloads'][-50:]
-        
+
         with open(ANALYTICS_FILE, 'w') as f:
             json.dump(data, f, indent=4)
         print(f"DEBUG: Successfully updated analytics for {key}")
@@ -212,11 +222,12 @@ def log_download(filename, user_name="Guest", user_email="Guest"):
         import traceback
         traceback.print_exc()
 
+
 def cleanup_analytics():
     """Remove analytics entries for versions that no longer exist in both manifests"""
     if not os.path.exists(ANALYTICS_FILE):
         return
-        
+
     try:
         active_keys = set()
         for os_type in ['android', 'ios']:
@@ -229,22 +240,24 @@ def cleanup_analytics():
                             ver = v.get('version', 'Unknown')
                             e = v.get('environment', 'prod')
                             active_keys.add(f"{os_type}|{ver}|{e}")
-                    except: pass
-        
+                    except:
+                        pass
+
         with open(ANALYTICS_FILE, 'r') as f:
             analytics = json.load(f)
-            
+
         initial_count = len(analytics)
         # Keep only active keys
         cleaned_analytics = {k: v for k, v in analytics.items() if k in active_keys}
-        
+
         if len(cleaned_analytics) != initial_count:
             with open(ANALYTICS_FILE, 'w') as f:
                 json.dump(cleaned_analytics, f, indent=4)
             print(f"Cleaned up analytics: removed {initial_count - len(cleaned_analytics)} orphaned entries.")
-            
+
     except Exception as e:
         print(f"Error cleaning analytics: {e}")
+
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def get_session_token(self):
@@ -262,12 +275,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         token = self.get_session_token()
         if not token or token not in SESSIONS:
             return False
-        
+
         session = SESSIONS[token]
         if time.time() > session['expires']:
             del SESSIONS[token]
             return False
-        
+
         return True
 
     def is_admin_authenticated(self):
@@ -278,27 +291,31 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         token = self.get_session_token()
         if not token or token not in SESSIONS:
             return False
-        
+
         session = SESSIONS[token]
         if time.time() > session.get('expires', 0):
             return False
-            
+
         return session.get('role') == 'admin' or session.get('is_super_admin', False)
 
     def is_super_admin_authenticated(self):
+        env = load_env()
+        if env.get('SECURE_LOGIN_ADMIN', 'true').lower() == 'false':
+            return True
+
         token = self.get_session_token()
         if not token or token not in SESSIONS:
             return False
-        
+
         session = SESSIONS[token]
         if time.time() > session.get('expires', 0):
             return False
-            
+
         return session.get('is_super_admin', False)
 
     def do_POST(self):
         parsed_path = urllib.parse.urlparse(self.path)
-        
+
         if parsed_path.path == '/login':
             env = load_env()
             if env.get('SECURE_LOGIN', 'true').lower() == 'false':
@@ -312,7 +329,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             post_data = self.rfile.read(content_length)
             data = json.loads(post_data.decode('utf-8'))
             id_token = data.get('id_token')
-            
+
             if not id_token:
                 self.send_error(400, "Missing id_token")
                 return
@@ -321,25 +338,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 verify_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
                 with urllib.request.urlopen(verify_url) as response:
                     token_info = json.loads(response.read().decode())
-                    
+
                 email = token_info.get('email')
-                if not email: raise Exception("No email in token")
-                
+                if not email:
+                    raise Exception("No email in token")
+
                 super_admin_status = is_super_admin(email)
                 admin_status = is_admin(email) or super_admin_status
                 user_permissions = is_whitelisted(email)
-                
+
                 if not admin_status and not user_permissions:
                     self.send_response(403)
                     self.send_header('Content-Type', 'application/json')
                     self.end_headers()
                     self.wfile.write(json.dumps({'error': 'Unauthorized', 'email': email}).encode('utf-8'))
                     return
-                
+
                 token = secrets.token_hex(32)
                 duration = ADMIN_SESSION_DURATION if admin_status else SESSION_DURATION
                 expires = time.time() + duration
-                
+
                 # Even for admins, we respect the whitelist for app permissions.
                 # If they are NOT in the whitelist, they get NO app permissions by default.
                 permissions = user_permissions or {
@@ -355,7 +373,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     'is_super_admin': super_admin_status,
                     'permissions': permissions
                 }
-                
+
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
                 self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
@@ -372,7 +390,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             email = SESSIONS.get(token, {}).get('email', 'System')
             log_audit(email, 'Update Whitelist', 'Modified access permissions/user list')
             return self.api_update_whitelist()
-            
+
         if parsed_path.path == '/api/admin/versions':
             # Note: Specific logging is handled inside api_update_versions for more detail
             return self.api_update_versions()
@@ -382,6 +400,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if parsed_path.path == '/api/admin/delete-file':
             return self.api_delete_file()
+
+        if parsed_path.path == '/api/admin/test-push':
+            return self.api_test_push()
+
+        if parsed_path.path == '/api/admin/send-push':
+            return self.api_send_push()
 
         self.send_response(404)
         self.end_headers()
@@ -427,7 +451,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if os.path.exists('public/ios_versions.json'):
                 with open('public/ios_versions.json', 'r') as f:
                     data['ios'] = json.load(f)
-        except: pass
+        except:
+            pass
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
@@ -454,7 +479,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if os.path.exists(AUDIT_LOG_FILE):
             with open(AUDIT_LOG_FILE, 'r') as f:
                 logs = json.load(f)
-        
+
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
@@ -464,7 +489,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if not self.is_admin_authenticated():
             self.send_error(403)
             return
-        
+
         stats = {}
         try:
             total, used, free = shutil.disk_usage("/")
@@ -476,7 +501,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             }
         except Exception as e:
             print(f"Error getting system stats: {e}")
-            
+
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
@@ -500,7 +525,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             'name': session.get('name', 'Guest'),
             'expires': time.time() + QR_TOKEN_DURATION
         }
-        
+
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
@@ -512,7 +537,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         params = urllib.parse.parse_qs(query)
         token = params.get('token', [''])[0]
         url = params.get('url', [''])[0]
-        
+
         if not token or not url:
             self.send_error(400)
             return
@@ -526,7 +551,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         else:
             # Token already in URL, use as-is
             magic_url = url
-        
+
         # Generate QR
         qr = qrcode.QRCode(
             version=1,
@@ -538,7 +563,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         qr.make(fit=True)
 
         img = qr.make_image(fill_color="black", back_color="white")
-        
+
         # Write to buffer
         img_byte_arr = io.BytesIO()
         img.save(img_byte_arr, format='PNG')
@@ -556,11 +581,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             content_length = int(self.headers.get('Content-Length', 0))
             data = json.loads(self.rfile.read(content_length).decode())
-            os_type = data.get('os') # 'android' or 'ios'
+            os_type = data.get('os')  # 'android' or 'ios'
             versions = data.get('versions', [])
-            
+
             filename = 'public/android_versions.json' if os_type == 'android' else 'public/ios_versions.json'
-            
+
             # Load existing versions to detect new additions
             existing_versions = []
             if os.path.exists(filename):
@@ -569,27 +594,27 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                         existing_versions = json.load(f)
                 except:
                     pass
-            
+
             # Save new versions
             with open(filename, 'w') as f:
                 json.dump(versions, f, indent=4)
-            
+
             # Detect newly added versions
             # Create a map of existing version identifiers to their data for comparison
             existing_map = {}
             for v in existing_versions:
                 version_id = f"{v.get('appName', '')}|{v.get('version', '')}|{v.get('environment', 'prod')}"
                 existing_map[version_id] = v
-            
+
             # Check for new versions and send notifications
             token = self.get_session_token()
             email = SESSIONS.get(token, {}).get('email', 'System')
-            
+
             for v in versions:
                 version_id = f"{v.get('appName', '')}|{v.get('version', '')}|{v.get('environment', 'prod')}"
                 v_num = v.get('version', 'Unknown')
                 v_env = v.get('environment', 'prod')
-                
+
                 if version_id not in existing_map:
                     # This is a new version
                     print(f"New app version detected: {v.get('appName')} v{v_num} ({v_env})")
@@ -605,27 +630,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                         if v.get(k) != old_v.get(k):
                             changed = True
                             break
-                    
+
                     if changed:
                         log_audit(email, 'Update Version', f"Modified {v.get('appName')}", os_type, v_env, v_num)
-            
+
             # Detect deletions
             new_ids = {f"{v.get('appName', '')}|{v.get('version', '')}|{v.get('environment', 'prod')}" for v in versions}
             for v in existing_versions:
                 old_id = f"{v.get('appName', '')}|{v.get('version', '')}|{v.get('environment', 'prod')}"
                 if old_id not in new_ids:
                     log_audit(email, 'Delete Version', f"Removed {v.get('appName')}", os_type, v.get('environment', 'prod'), v.get('version', 'Unknown'))
-                    
+
             # Cleanup analytics for deleted versions
             cleanup_analytics()
-                
+
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps({'status': 'success'}).encode())
         except Exception as e:
             self.send_error(500, str(e))
-
 
     def api_upload_file(self):
         if not self.is_admin_authenticated():
@@ -634,7 +658,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps({'status': 'error', 'error': 'Unauthorized'}).encode())
             return
-        
+
         try:
             content_type = self.headers.get('Content-Type')
             content_length = int(self.headers.get('Content-Length', 0))
@@ -644,22 +668,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({'status': 'error', 'error': 'Invalid Request'}).encode())
                 return
-            
+
             # Read the entire body into memory for reliable parsing
             body = self.rfile.read(content_length)
-            
+
             # Extract boundary
             parts = content_type.split("boundary=")
             boundary_str = parts[1].strip()
             if boundary_str.startswith('"') and boundary_str.endswith('"'):
                 boundary_str = boundary_str[1:-1]
             boundary = b"--" + boundary_str.encode()
-            
+
             # Split body by boundary
             sections = body.split(boundary)
             target_section = None
             filename = None
-            
+
             for section in sections:
                 if b'Content-Disposition' in section and b'filename=' in section:
                     target_section = section
@@ -668,7 +692,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     if match:
                         filename = match.group(1).decode()
                     break
-            
+
             if not target_section or not filename:
                 self.send_response(400)
                 self.send_header('Content-Type', 'application/json')
@@ -684,21 +708,21 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(json.dumps({'status': 'error', 'error': 'Invalid multi-part format'}).encode())
                 return
-            
+
             # The data starts after \r\n\r\n and ends before the trailing \r\n
             file_data = target_section[header_end + 4:]
             if file_data.endswith(b'\r\n'):
                 file_data = file_data[:-2]
-            
+
             # Determine destination
             ext = filename.split('.')[-1].lower()
             subdir = 'apk' if ext == 'apk' else 'ipa'
             save_path = f"public/downloads/{subdir}/{filename}"
-            
+
             # Ensure directory exists
             import os
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
-            
+
             with open(save_path, 'wb') as f:
                 f.write(file_data)
 
@@ -715,10 +739,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 email = SESSIONS.get(token, {}).get('email', 'System')
                 os_type = 'android' if ext == 'apk' else 'ios'
                 log_audit(email, 'Upload File', f"Uploaded {filename}", os_type=os_type)
-            except: pass
-            
+            except:
+                pass
+
             return
-            
+
         except Exception as e:
             print(f"Upload error: {e}")
             import traceback
@@ -731,12 +756,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed_path = urllib.parse.urlparse(self.path)
-        
+
         # Handle favicon.ico specially - redirect to /public/favicon.ico
         if parsed_path.path == '/favicon.ico':
             self.path = '/public/favicon.ico'
             return http.server.SimpleHTTPRequestHandler.do_GET(self)
-        
+
         # Public assets that don't need auth
         public_paths = ['/style.css', '/main.js']
         # If the path is a public asset, serve it
@@ -747,7 +772,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 if filename:
                     # Capture user info from session OR magic token
                     token = self.get_session_token()
-                    
+
                     # Check for Magic Token in URL query
                     query = urllib.parse.urlparse(self.path).query
                     params = urllib.parse.parse_qs(query)
@@ -755,7 +780,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
                     user_name = "Guest"
                     user_email = "Guest"
-                    
+
                     if magic_token and magic_token in QR_TOKENS:
                         qt = QR_TOKENS[magic_token]
                         if time.time() < qt['expires']:
@@ -766,32 +791,32 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     elif token and token in SESSIONS:
                         user_name = SESSIONS[token].get('name', 'Guest')
                         user_email = SESSIONS[token].get('email', 'Guest')
-                        
+
                     log_download(filename, user_name, user_email)
-                    
+
                     # Manually serve build files to include Content-Disposition header
                     file_path = parsed_path.path.lstrip('/')
                     if os.path.exists(file_path) and os.path.isfile(file_path):
                         self.send_response(200)
-                        
+
                         # ANTI-CACHE HEADERS to ensure every download is logged in production
                         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
                         self.send_header('Pragma', 'no-cache')
                         self.send_header('Expires', '0')
-                        
+
                         if file_path.endswith('.apk'):
                             self.send_header('Content-Type', 'application/vnd.android.package-archive')
                         elif file_path.endswith('.ipa'):
                             self.send_header('Content-Type', 'application/octet-stream')
                         else:
                             self.send_header('Content-Type', 'application/octet-stream')
-                            
+
                         self.send_header('Content-Disposition', f'attachment; filename="{filename}"')
                         self.send_header('Content-Length', str(os.path.getsize(file_path)))
                         self.end_headers()
-                        
+
                         print(f"Serving download: {file_path} for {user_email}")
-                        
+
                         with open(file_path, 'rb') as f:
                             import shutil
                             shutil.copyfileobj(f, self.wfile)
@@ -813,7 +838,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if parsed_path.path == '/api/admin/whitelist':
             return self.api_get_whitelist()
-        
+
         if parsed_path.path == '/api/admin/versions':
             return self.api_get_versions()
 
@@ -822,6 +847,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if parsed_path.path == '/api/admin/audit-logs':
             return self.api_get_audit_logs()
+
+        if parsed_path.path == '/api/admin/get-server-ip':
+            return self.api_get_server_ip()
 
         if parsed_path.path == '/api/admin/system-stats':
             return self.api_get_system_stats()
@@ -850,7 +878,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if parsed_path.path == '/api/user/versions':
             return self.api_serve_user_versions(parsed_path)
-            
+
         if parsed_path.path == '/api/qr/token':
             return self.api_get_qr_token()
 
@@ -863,26 +891,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if not self.is_admin_authenticated():
             self.send_error(403)
             return
-        
+
         try:
             content_length = int(self.headers.get('Content-Length', 0))
             data = json.loads(self.rfile.read(content_length).decode())
             filename = data.get('filename')
-            os_type = data.get('os') # 'android' or 'ios'
-            
+            os_type = data.get('os')  # 'android' or 'ios'
+
             if not filename or not os_type:
                 self.send_error(400, "Missing filename or os")
                 return
-                
+
             subdir = 'apk' if os_type == 'android' else 'ipa'
             # Security: Ensure filename doesn't contain path traversal
             safe_filename = os.path.basename(filename)
             file_path = f"public/downloads/{subdir}/{safe_filename}"
-            
+
             if os.path.exists(file_path):
                 os.remove(file_path)
                 print(f"Deleted file: {file_path}")
-            
+
             response = json.dumps({'status': 'success'}).encode()
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -895,9 +923,191 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 token = self.get_session_token()
                 email = SESSIONS.get(token, {}).get('email', 'System')
                 log_audit(email, 'Delete File', f"Deleted {filename} asset", os_type=os_type)
-            except: pass
+            except:
+                pass
         except Exception as e:
             print(f"Delete error: {e}")
+            self.send_error(500, str(e))
+        return
+
+    def api_test_push(self):
+        if not self.is_super_admin_authenticated():
+            self.send_error(403)
+            return
+
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            data = json.loads(self.rfile.read(content_length).decode())
+            test_user = data.get('user')
+
+            if not test_user:
+                self.send_error(400, "Missing user data")
+                return
+
+            env = load_env()
+            push_url = env.get('PUSH_NOTIFICATION_URL', '')
+            push_header = env.get('PUSH_NOTIFICATION_HEADER', '')
+
+            if not push_url or push_url == '-' or not push_header or push_header == '-':
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b"Push notification URL or Secret not configured.")
+                return
+
+            # Prepare notification payload for a single test user
+            payload = {
+                'app_name': 'Test App',
+                'version': '1.0.0-TEST',
+                'environment': 'stg',
+                'release_date': time.strftime('%Y-%m-%d'),
+                'os_type': 'android',
+                'app_installer_url': env.get('APP_INSTALLER_URL', ''),
+                'whitelist': [test_user],
+                'is_test': True
+            }
+
+            req_data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(
+                push_url,
+                data=req_data,
+                headers={
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'App-Installer-Server/1.0',
+                    'Accept': 'application/json',
+                    'X-Secret-Access': push_header
+                },
+                method='POST'
+            )
+
+            try:
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    res_body = response.read().decode()
+
+                    # Log the test push
+                    token = self.get_session_token()
+                    email = SESSIONS.get(token, {}).get('email', 'System')
+                    log_audit(email, 'Test Push', f"Sent test notification to {test_user.get('email')}")
+
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'status': 'success', 'response': res_body}).encode())
+            except urllib.error.HTTPError as e:
+                body = e.read().decode('utf-8') if e.fp else "No body"
+                print(f"Test push HTTP error {e.code}: {body}")
+                self.send_response(e.code)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'status': 'error', 'message': str(e), 'body': body}).encode())
+            except Exception as e:
+                print(f"Test push request error: {e}")
+                self.send_error(500, str(e))
+        except Exception as e:
+            print(f"Test push processing error: {e}")
+            self.send_error(500, str(e))
+        return
+
+    def api_send_push(self):
+        if not self.is_super_admin_authenticated():
+            self.send_error(403)
+            return
+
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            data = json.loads(self.rfile.read(content_length).decode())
+            user = data.get('user')
+            app_data = data.get('app_data')
+            os_type = data.get('os_type')
+
+            if not user or not app_data or not os_type:
+                self.send_error(400, "Missing data")
+                return
+
+            env = load_env()
+            push_url = env.get('PUSH_NOTIFICATION_URL', '')
+            push_header = env.get('PUSH_NOTIFICATION_HEADER', '')
+
+            if not push_url or push_url == '-' or not push_header or push_header == '-':
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b"Push notification URL or Secret not configured.")
+                return
+
+            payload = {
+                'app_name': app_data.get('appName', ''),
+                'version': app_data.get('version', ''),
+                'environment': app_data.get('environment', ''),
+                'release_date': app_data.get('date', ''),
+                'os_type': os_type,
+                'app_installer_url': env.get('APP_INSTALLER_URL', ''),
+                'whitelist': [user],
+                'is_test': True
+            }
+
+            req_data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(
+                push_url,
+                data=req_data,
+                headers={
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'App-Installer-Server/1.0',
+                    'Accept': 'application/json',
+                    'X-Secret-Access': push_header
+                },
+                method='POST'
+            )
+
+            try:
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    res_body = response.read().decode()
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({'status': 'success', 'response': res_body}).encode())
+            except urllib.error.HTTPError as e:
+                body = e.read().decode('utf-8') if e.fp else "No body"
+                self.send_response(e.code)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'status': 'error', 'message': str(e), 'body': body}).encode())
+            except Exception as e:
+                self.send_error(500, str(e))
+        except Exception as e:
+            self.send_error(500, str(e))
+        return
+
+    def api_get_server_ip(self):
+        if not self.is_super_admin_authenticated():
+            self.send_error(403)
+            return
+
+        try:
+            env = load_env()
+            ip_url = env.get('PUSH_NOTIFICATION_IP_URL', '')
+
+            if not ip_url or ip_url == '-':
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b"Push notification IP URL not configured.")
+                return
+
+            req = urllib.request.Request(
+                ip_url,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    'Accept': '*/*'
+                },
+                method='GET'
+            )
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_body = response.read().decode().strip()
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({'status': 'success', 'ip': res_body}).encode())
+        except Exception as e:
+            print(f"Get IP error: {e}")
             self.send_error(500, str(e))
         return
 
@@ -908,7 +1118,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Location', '/')
             self.end_headers()
             return
-            
+
         try:
             with open('admin.html', 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -928,19 +1138,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         env = load_env()
         app_name = env.get('APP_NAME', 'App Installer')
         google_client_id = env.get('GOOGLE_CLIENT_ID', '')
-        
+
         try:
             with open('index.html', 'r', encoding='utf-8') as f:
                 content = f.read()
-            
+
             content = content.replace("<title>App Installer</title>", f"<title>{app_name}</title>")
             content = content.replace('<h1 id="app-title">...</h1>', f'<h1 id="app-title">{app_name}</h1>')
             content = content.replace("© ... All rights reserved.", f"© 2025 {app_name}. All rights reserved.")
-            
+
             # Inject Google Client ID if available
             if google_client_id:
                 content = content.replace('<!-- GOOGLE_CLIENT_ID_PLACEHOLDER -->', google_client_id)
-            
+
             self.send_response(200)
             self.send_header('Content-Type', 'text/html; charset=utf-8')
             self.end_headers()
@@ -956,13 +1166,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         session = SESSIONS.get(token, {}) if token else {}
         expires = session.get('expires', 0)
         is_user_admin = session.get('role') == 'admin'
-        
+
         app_templates = {}
         if os.path.exists('app_config.json'):
             try:
                 with open('app_config.json', 'r') as f:
                     app_templates = json.load(f)
-            except: pass
+            except:
+                pass
+
+        user_conf = {}
+        if os.path.exists('user_config.json'):
+            try:
+                with open('user_config.json', 'r') as f:
+                    user_conf = json.load(f)
+            except:
+                pass
 
         config = {
             'appName': env.get('APP_NAME', 'App Installer'),
@@ -970,10 +1189,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             'expires': expires,
             'secureLogin': env.get('SECURE_LOGIN', 'true').lower() != 'false',
             'isAdmin': is_user_admin if env.get('SECURE_LOGIN_ADMIN', 'true').lower() == 'true' else True,
-            'isSuperAdmin': session.get('is_super_admin', False),
+            'isSuperAdmin': session.get('is_super_admin', False) if env.get('SECURE_LOGIN_ADMIN', 'true').lower() == 'true' else True,
             'timezone': env.get('TIMEZONE', 'UTC'),
+            'pushNotificationIpUrl': env.get('PUSH_NOTIFICATION_IP_URL', ''),
             'permissions': session.get('permissions', {}),
-            'appTemplates': app_templates
+            'appTemplates': app_templates,
+            'userConfig': user_conf
         }
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
@@ -988,22 +1209,22 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         query = urllib.parse.parse_qs(parsed_path.query)
         os_type = query.get('os', ['android'])[0].lower()
-        
+
         token = self.get_session_token()
         session = SESSIONS.get(token, {})
         permissions = session.get('permissions', {})
-        
+
         # Determine defaults based on global security settings
         env = load_env()
         login_disabled = env.get('SECURE_LOGIN', 'true').lower() == 'false'
-        
+
         # Check OS Permission
         # If login is disabled, we allow everything. If enabled, we MUST have a permission entry.
         if login_disabled:
             allowed_os = ['android', 'ios']
         else:
             allowed_os = permissions.get('availableOs', [])
-            
+
         if os_type not in allowed_os:
             response = json.dumps([]).encode()
             self.send_response(200)
@@ -1020,14 +1241,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             try:
                 with open(filename, 'r') as f:
                     data = json.load(f)
-            except: pass
+            except:
+                pass
 
         # Filter by Environment Permission
         if login_disabled:
             allowed_envs = ['stg', 'rc', 'prod']
         else:
             allowed_envs = permissions.get('availableEnv', [])
-            
+
         filtered_data = [v for v in data if (v.get('environment') or 'prod') in allowed_envs]
 
         response = json.dumps(filtered_data).encode()
@@ -1043,15 +1265,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         bundle_id = query.get('bundleId', ['com.example.app'])[0]
         version = query.get('version', ['1.0.0'])[0]
         ipa_filename = query.get('ipa', ['app.ipa'])[0]
-        
+
         host = self.headers.get('Host')
         scheme = "https"
         if "localhost" in host:
-             scheme = "http"
-             
+            scheme = "http"
+
         # Build IPA URL with magic_token if present
         ipa_url = f"{scheme}://{host}/public/downloads/ipa/{ipa_filename}"
-        
+
         # Preserve magic_token from the manifest URL to the IPA URL
         magic_token = query.get('magic_token', [None])[0]
         if magic_token:
@@ -1088,13 +1310,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     </array>
 </dict>
 </plist>"""
-        
+
         self.send_response(200)
         # Use application/xml for proper iOS handling
         self.send_header("Content-Type", "application/xml; charset=utf-8")
         self.send_header("Content-Length", str(len(manifest_xml.encode('utf-8'))))
         self.end_headers()
         self.wfile.write(manifest_xml.encode('utf-8'))
+
 
 print(f"Serving at port {PORT}")
 socketserver.TCPServer.allow_reuse_address = True

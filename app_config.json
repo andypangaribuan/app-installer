@@ -1,1 +1,14 @@
-{}
+{
+    "stg": {
+        "appName": "Treasury Global STG",
+        "bundleId": "id.treasury.global.stg"
+    },
+    "rc": {
+        "appName": "Treasury Global RC",
+        "bundleId": "id.treasury.global.rc"
+    },
+    "prod": {
+        "appName": "Treasury Global",
+        "bundleId": "id.treasury.global"
+    }
+}

@@ -40,5 +40,11 @@ function shell {
 }
 
 
+#: kill port 8080
+function kill {
+  lsof -ti:8080 | xargs kill -9
+}
+
+
 #: space
 [ -z "$TASKFILE_EXECUTOR" ] && sq taskfile --execute "$@"

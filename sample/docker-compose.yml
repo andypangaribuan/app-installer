@@ -10,5 +10,6 @@ services:
       - ./vol/analytics.json:/app/analytics.json:shared
       - ./vol/app_config.json:/app/app_config.json:shared
       - ./vol/audit_logs.json:/app/audit_logs.json:shared
+      - ./vol/user_config.json:/app/user_config.json:shared
       - ./vol/whitelist.json:/app/whitelist.json:shared
     restart: unless-stopped
