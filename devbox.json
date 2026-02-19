@@ -1,0 +1,16 @@
+{
+  "packages": ["python@3.12", "nodejs@20"],
+  "shell": {
+    "init_hook": [
+      "if [ ! -d \".venv\" ]; then python -m venv .venv; fi",
+      "source .venv/bin/activate",
+      "pip install --upgrade pip",
+      "pip install -r requirements.txt",
+      "npm install"
+    ],
+    "scripts": {
+      "server": "python server.py",
+      "dev": "npm run dev"
+    }
+  }
+}
